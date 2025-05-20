@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Deploys an EC2 instance using existing VPC, Subnet, and Security Group"
+Parameters:
+  KeyName:
+    Description: "Name of the EC2 Key Pair to allow SSH access"
+    Type: AWS::EC2::KeyPair::Kennethians-kp-ohio.pem
+    # No Default, user MUST provide a valid key pair name
+
+Resources:
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.medium
+      ImageId: ami-0fd4271cf3adce206
+      SubnetId: subnet-0d875ad69cc74229f
+      SecurityGroupIds:
+        - sg-05f732546f0bb8c29
+      KeyName: !Ref KeyName # Use the parameter
+      Tags:
+        - Key: Name
+          Value: MyEC2Instance
+Outputs:
+  InstanceId:
+    Description: "ID of the EC2 instance"
+    Value: !Ref EC2Instance
