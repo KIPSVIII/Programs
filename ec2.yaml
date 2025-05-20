@@ -13,7 +13,7 @@ Resources:
       # IMPORTANT: Replace with a VALID Windows Server AMI ID for us-east-2
       # Example: A recent Windows Server 2019 Base AMI might be ami-0e31e50085a1a0f8b
       # You need to find the specific one you want in your AWS EC2 Console (AMIs)
-      ImageId: ami-xxxxxxxxxxxxxxxxx # <--- *** CRITICAL: UPDATE THIS TO A WINDOWS AMI ***
+      ImageId: ami-0fd4271cf3adce206 # <--- *** CRITICAL: UPDATE THIS TO A VALID AMI ***
       SubnetId: subnet-0d875ad69cc74229f # Ensure this Subnet ID is valid and in us-east-2
       SecurityGroupIds:
         - sg-05f732546f0bb8c29 # Ensure this Security Group ID allows RDP (port 3389)
