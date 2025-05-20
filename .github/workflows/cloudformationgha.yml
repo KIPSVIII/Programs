@@ -17,6 +17,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-2
 
       - name: Deploy EC2 instance
         uses: aws-actions/aws-cloudformation-github-deploy@v1
@@ -26,6 +27,3 @@ jobs:
           # capabilities: CAPABILITY_IAM # Needed if your template creates IAM resources
           parameter-overrides: >-
             KeyName=Kennethians-kp-ohio.pem # Replace with your EC2 Key Pair Name
-
-        env:
-          AWS_REGION: us-east-2 # setting the region
