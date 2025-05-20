@@ -12,17 +12,16 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
 
       - name: Deploy EC2 instance
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
-          template: ./cloudformation.yaml  # Path to your CloudFormation template
+          template: ./ec2.yaml  # Path to your CloudFormation template
           stack-name: MyEC2InstanceStack # Give your stack a name
           # capabilities: CAPABILITY_IAM # Needed if your template creates IAM resources
           parameter-overrides: >-
