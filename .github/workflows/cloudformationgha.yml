@@ -25,4 +25,4 @@ jobs:
           name: MyGHAEC2InstanceStack # Give your stack a name
           # capabilities: CAPABILITY_IAM # Needed if your template creates IAM resources
           parameter-overrides: >-
-            KeyName=Kennethians-kp-ohio.pem # Replace with your EC2 Key Pair Name
+            KeyName=Kennethians-kp-ohio # Replace with your EC2 Key Pair Name
