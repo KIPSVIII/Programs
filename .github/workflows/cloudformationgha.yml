@@ -26,7 +26,7 @@ jobs:
           stack-name: MyEC2InstanceStack # Give your stack a name
           # capabilities: CAPABILITY_IAM # Needed if your template creates IAM resources
           parameter-overrides: >-
-            KeyName=my-key-pair # Replace with your EC2 Key Pair Name
+            KeyName=Kennethians-kp-ohio.pem # Replace with your EC2 Key Pair Name
 
         env:
-          AWS_REGION: us-east-1 # setting the region
+          AWS_REGION: us-east-2 # setting the region
