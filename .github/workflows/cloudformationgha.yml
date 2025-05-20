@@ -1,0 +1,32 @@
+name: Deploy EC2 Instance with CloudFormation
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+
+      - name: Deploy EC2 instance
+        uses: aws-actions/aws-cloudformation-github-deploy@v1
+        with:
+          template: ./cloudformation.yaml  # Path to your CloudFormation template
+          stack-name: MyEC2InstanceStack # Give your stack a name
+          # capabilities: CAPABILITY_IAM # Needed if your template creates IAM resources
+          parameter-overrides: >-
+            KeyName=my-key-pair # Replace with your EC2 Key Pair Name
+
+        env:
+          AWS_REGION: us-east-1 # setting the region
