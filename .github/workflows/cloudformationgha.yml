@@ -1,6 +1,6 @@
 name: Deploy EC2 Instance with CloudFormation
 on:
-  push:
+  workflow_dispatch::
     branches:
       - main
 
