@@ -1,0 +1,56 @@
+name: Deploy EC2 Instance
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}  # Use GitHub secrets for security
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # Use GitHub secrets
+          aws-region: us-east-1
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }} # Use GitHub secrets
+          # aws-security-token: ${{ secrets.AWS_SECURITY_TOKEN }} # removed duplicate
+
+      - name: Launch EC2 Instance
+        id: launch-ec2
+        uses: aws-actions/run-ec2-command@v2
+        with:
+          command: |
+            # Use existing VPC and Subnet
+            VPC_ID=vpc-09d3983f2a51cd197
+            SUBNET_ID=subnet-0d875ad69cc74229f
+            SECURITY_GROUP_ID=sg-05f732546f0bb8c29
+            AMI_ID=ami-0fd4271cf3adce206
+            INSTANCE_TYPE=t2.medium
+
+            echo "Using existing VPC: $VPC_ID"
+            echo "Using existing Subnet: $SUBNET_ID"
+            echo "Using existing Security Group: $SECURITY_GROUP_ID"
+            echo "Launching EC2 instance..."
+
+            # Launch the EC2 instance
+            aws ec2 run-instances \
+              --image-id $AMI_ID \
+              --instance-type $INSTANCE_TYPE \
+              --subnet-id $SUBNET_ID \
+              --security-group-ids $SECURITY_GROUP_ID \
+              --key-name my-key-pair # Replace 'my-key-pair' with your actual key pair name
+
+      - name: Get EC2 Instance ID
+        run: |
+          # Get the instance ID from the previous step's output
+          INSTANCE_ID=$(aws ec2 describe-instances \
+            --filters "Name=tag:aws:cloudformation:stack-name,Values=$GITHUB_RUN_ID" \
+            --query 'Reservations[*].Instances[*].InstanceId' \
+            --output text)
+          echo "EC2 Instance ID: $INSTANCE_ID"
+          echo "::set-output name=instance-id::$INSTANCE_ID" # Set output for other steps
