@@ -1,83 +1,25 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Deploys a Windows EC2 instance, installs Trend Micro Deep Security Agent."
+Description: "Deploys an EC2 instance using existing VPC, Subnet, and Security Group"
 Parameters:
   KeyName:
-    Description: "Name of the EC2 Key Pair to allow SSH (RDP) access"
-    Type: AWS::EC2::KeyPair::KeyName
+    Description: "EC2 Key Pair to allow SSH access"
+    Type: AWS::EC2::KeyPair::Name
+   
 
 Resources:
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.medium
-      # IMPORTANT: Replace with a VALID Windows Server AMI ID for us-east-2
-      # Example: A recent Windows Server 2019 Base AMI might be ami-0e31e50085a1a0f8b
-      # You need to find the specific one you want in your AWS EC2 Console (AMIs)
-      ImageId: ami-0fd4271cf3adce206 # <--- *** CRITICAL: UPDATE THIS TO A VALID AMI ***
-      SubnetId: subnet-0d875ad69cc74229f # Ensure this Subnet ID is valid and in us-east-2
+      ImageId: ami-0fd4271cf3adce206
+      SubnetId: subnet-0d875ad69cc74229f
       SecurityGroupIds:
-        - sg-05f732546f0bb8c29 # Ensure this Security Group ID allows RDP (port 3389)
+        - sg-05f732546f0bb8c29
       KeyName: !Ref KeyName
       Tags:
         - Key: Name
-          Value: MyWindowsDSAInstance # Renamed for clarity
-
-      UserData: # <--- NEW SECTION FOR THE SCRIPT
-        Fn::Base64:
-          !Sub |
-            <powershell>
-            #requires -version 4.0
-
-            # PowerShell 4 or up is required to run this script
-            # This script detects platform and architecture.  It then downloads and installs the relevant Deep Security Agent package
-
-            if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-                Write-Warning "You are not running as an Administrator. Please try again with admin privileges."
-                exit 1
-            }
-
-            $managerUrl="${managerUrl}" # Using CloudFormation Sub for potential future variable injection
-
-            $env:LogPath = "$env:appdata\Trend Micro\Deep Security Agent\installer"
-            New-Item -path $env:LogPath -type directory -Force # Added -Force to ensure directory creation if parent doesn't exist
-            Start-Transcript -path "$env:LogPath\dsa_deploy.log" -append
-
-            Write-Host "$(Get-Date -format T) - DSA download started" # Changed echo to Write-Host for PowerShell
-            if ( [intptr]::Size -eq 8 ) {
-                $sourceUrl=-join($managerUrl, "software/agent/Windows/x86_64/agent.msi") }
-            else {
-                $sourceUrl=-join($managerUrl, "software/agent/Windows/i386/agent.msi") }
-            Write-Host "$(Get-Date -format T) - Download Deep Security Agent Package" $sourceUrl
-
-            $ACTIVATIONURL="${activationUrl}" # Using CloudFormation Sub for potential future variable injection
-
-            $WebClient = New-Object System.Net.WebClient
-
-            # Add agent version control info
-            $WebClient.Headers.Add("Agent-Version-Control", "on")
-            $WebClient.QueryString.Add("tenantID", "30279") # Consider making this a CFN Parameter or Secret
-            $WebClient.QueryString.Add("windowsVersion", (Get-CimInstance Win32_OperatingSystem).Version)
-            $WebClient.Add("windowsProductType", (Get-CimInstance Win32_OperatingSystem).ProductType) # Likely missing QueryString.Add here?
-            $WebClient.QueryString.Add("windowsOperatingSystemSku", (Get-CimInstance Win32_OperatingSystem).OperatingSystemSku)
-
-            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;
-            [Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}
-            $WebClient.DownloadFile($sourceUrl, "$env:temp\agent.msi")
-
-            if ( (Get-Item "$env:temp\agent.msi").length -eq 0 ) {
-                Write-Error "Failed to download the Deep Security Agent. Please check if the package is imported into the Workload Security Manager. " # Changed echo to Write-Error
-                exit 1
-            }
-            Write-Host "$(Get-Date -format T) - Downloaded File Size:" (Get-Item "$env:temp\agent.msi").length
-
-            Write-Host "$(Get-Date -format T) - DSA install started"
-            Write-Host "$(Get-Date -format T) - Installer Exit Code:" (Start-Process -FilePath msiexec -ArgumentList "/i $env:temp\agent.msi /qn ADDLOCAL=ALL /l*v `"$env:LogPath\dsa_install.log`"" -Wait -PassThru).ExitCode
-            Write-Host "$(Get-Date -format T) - DSA activation started"
-
-            Start-Sleep -s 50
-            & $Env:ProgramFiles"\Trend Micro\Deep Security Agent\dsa_control" -r
-            & $Env:ProgramFiles"\Trend Micro\Deep Security Agent\dsa_control" -a $ACTIVATIONURL "tenantID:41EC06A5-4706-C5EE-DDAF-89CBED5C1EBE" "token:62E14419-9DC5-106F-3C15-840EF981A187"
-            #& $Env:ProgramFiles"\Trend Micro\Deep Security Agent\dsa_control" -a dsm://agents.workload.de-1.cloudone.trendmicro.com:443/ "tenantID:41EC06A5-4706-C5EE-DDAF-89CBED5C1EBE" "token:62E14419-9DC5-106F-3C15-840EF981A187"
-            Stop-Transcript
-            Write-Host "$(Get-Date -format T) - DSA Deployment Finished"
-            </powershell>
+          Value: MyEC2Instance
+Outputs:
+  InstanceId:
+    Description: "ID of the EC2 instance"
+    Value: !Ref EC2Instance
