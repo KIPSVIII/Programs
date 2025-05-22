@@ -2,20 +2,20 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: "Deploys an EC2 instance using existing VPC, Subnet, and Security Group"
 Parameters:
   KeyName:
-    Description: "EC2 Key Pair to allow SSH access"
-    Type: AWS::EC2::KeyPair::Name
-   
+    Description: "Name of the EC2 Key Pair to allow SSH access"
+    Type: AWS::EC2::KeyPair::KeyName # <--- CORRECTED LINE!
+    # No Default, user MUST provide a valid key pair name
 
 Resources:
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.medium
-      ImageId: ami-0fd4271cf3adce206
-      SubnetId: subnet-0d875ad69cc74229f
+      ImageId: ami-0fd4271cf3adce206 # Ensure this AMI is valid for us-east-2
+      SubnetId: subnet-0d875ad69cc74229f # Ensure this Subnet ID is valid and in us-east-2
       SecurityGroupIds:
-        - sg-05f732546f0bb8c29
-      KeyName: !Ref KeyName
+        - sg-05f732546f0bb8c29 # Ensure this Security Group ID is valid
+      KeyName: !Ref KeyName # Use the parameter
       Tags:
         - Key: Name
           Value: MyEC2Instance
